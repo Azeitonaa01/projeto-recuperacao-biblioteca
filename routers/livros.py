@@ -23,3 +23,14 @@ def listar_livros(autor: str | None = None, db: Session = Depends(get_db)):
     if autor:
         consulta = consulta.filter(models.Livro.autor.ilike(f"%{autor}%"))
     return consulta.all()
+
+@router.put("/{livro_id}", response_model=schemas.LivroResponseSchema)
+def atualizar_livro(livro_id: int, dados: schemas.LivroCreateSchema, db: Session = Depends(get_db)):
+    livro = db.query(models.Livro).filter(models.Livro.id == livro_id).first()
+    if not livro:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    for campo, valor in dados.model_dump().items():
+        setattr(livro, campo, valor)
+    db.commit()
+    db.refresh(livro)
+    return livro
