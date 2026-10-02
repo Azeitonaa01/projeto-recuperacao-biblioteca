@@ -34,3 +34,12 @@ def atualizar_livro(livro_id: int, dados: schemas.LivroCreateSchema, db: Session
     db.commit()
     db.refresh(livro)
     return livro
+
+@router.delete("/{livro_id}")
+def remover_livro(livro_id: int, db: Session = Depends(get_db)):
+    livro = db.query(models.Livro).filter(models.Livro.id == livro_id).first()
+    if not livro:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    db.delete(livro)
+    db.commit()
+    return {"mensagem": f"Livro {livro_id} removido com sucesso"}
